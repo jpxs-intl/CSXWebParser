@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap');
+
+* {
+    --accent-color: #ff6600;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #fff;
+  background-color: #111;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.button {
+   background-color: #111;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: 0.3s;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: var(--accent-color);
+    color: #111;
+}
+
+.button:active {
+    transform: scale(0.95);
+}
+
+.button:focus {
+    outline: none;
+}
+
+select {
+    background-color: #111;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: 0.3s;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.file-list {
+    width: 100%;
+    border: 2px #ff6600;
+}
+
+.file-list > tr {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+}
+
+.file-list > tr:hover {
+    background-color: #222;
+}
+
+.file {
+    margin: 20px 0;
+    position: static
+}
+
+.file-left {
+    position: absolute;
+    left: 1rem;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.file-right {
+    position: static;
+    right: 1rem;
+    display: flex;
+    align-items: end;
+    justify-content: right;
+    flex-direction: row;
+}
+
+.file-right > * {
+    margin-left: 1rem;
+}

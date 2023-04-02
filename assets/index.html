@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/global.css" />
+    <script src="/bundle.js" defer></script>
+    <title>JPXS | CSX Parser</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>JPXS | CSX Parser</h1>
+
+      <button id="upload" class="button">Upload Files</button>
+      <button id="download-all" class="button">Download All</button>
+      <button id="download-csx" class="button">Download CSX</button>  
+
+      <!--Sorting Options-->
+
+        <div class="sort">
+            <label for="sort">Sort By:</label>
+            <select id="sort">
+            <option value="name">Name</option>
+            <option value="extension">Extension</option>
+            <option value="size">Size</option>
+            </select>
+        </div>
+        
+        <div class="sort">
+            <label for="order">Order:</label>
+            <select id="order">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+            </select>
+        </div>
+
+      <table id="list" class="file-list"></table>
+    </div>
+  </body>
+</html>
