@@ -87,7 +87,8 @@ export default function BuildCSX() {
 
     if (file.extension == "png") {
       view.setInt8(dataOffset, 0x01);
-      view.setInt32(dataOffset + 0x44, file.data.byteLength - 0x4c, true);
+      view.setInt32(dataOffset + 0x44, file.data.byteLength, true);
+      view.setInt32(dataOffset + 0x48, file.data.byteLength, true);
     }
 
     const fileOffset = dataOffset + offsets[file.extension];
