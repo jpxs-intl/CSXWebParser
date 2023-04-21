@@ -2,6 +2,7 @@ export default function openFileInputDialog(extension?: string): Promise<FileLis
   const fileInputElement = document.createElement("input");
   fileInputElement.type = "file";
   fileInputElement.accept = extension || ".csx,.sbl,.sbb,.png";
+  fileInputElement.multiple = true;
 
   return new Promise((resolve) => {
     fileInputElement.onchange = () => {

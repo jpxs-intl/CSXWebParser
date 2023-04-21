@@ -52,7 +52,7 @@ export default function BuildCSX() {
   for (let i = 0; i < fileStorage.length; i++) {
     const file = fileStorage[i];
 
-    const size = file.extension == "png" ? file.data.byteLength : file.data.byteLength + 43;
+    const size = file.extension == "png" ? file.data.byteLength + 0x4c : file.data.byteLength;
 
     tableData.push({
       fileMagic: fileMagics[file.extension],
@@ -61,7 +61,7 @@ export default function BuildCSX() {
       fileName: file.name,
     });
 
-    currentOffset += size + offsets[file.extension]
+    currentOffset += size
   }
 
   // calculate file size
@@ -87,7 +87,7 @@ export default function BuildCSX() {
 
     if (file.extension == "png") {
       view.setInt8(dataOffset, 0x01);
-      view.setInt32(dataOffset + 43, file.data.byteLength, true);
+      view.setInt32(dataOffset + 0x44, file.data.byteLength - 0x4c, true);
     }
 
     const fileOffset = dataOffset + offsets[file.extension];
