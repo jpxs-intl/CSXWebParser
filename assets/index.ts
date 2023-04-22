@@ -2,6 +2,7 @@ import BuildCSX from "./scripts/build";
 import openFileInputDialog from "./scripts/fileInputDialog";
 import FileListManager from "./scripts/fileList";
 import ParseCSX from "./scripts/parse";
+import zip from "jszip";
 
 const uploadButton = document.getElementById("upload") as HTMLButtonElement;
 const downloadAll = document.getElementById("download-all") as HTMLButtonElement;
@@ -63,7 +64,39 @@ uploadButton.addEventListener("click", async () => {
   });
 });
 
-downloadAll.addEventListener("click", () => {});
+downloadAll.addEventListener("click", () => {
+  const zipfile = new zip();
+
+  zipfile.folder("texture");
+  zipfile.folder("block");
+  zipfile.folder("building");
+
+  fileListManager.files.forEach((file) => {
+    const blob = new Blob([file.data], { type: "application/octet-stream" });
+
+    switch (file.extension) {
+      case "png":
+        zipfile.file(`texture/${file.name}.png`, blob);
+        break;
+      case "sbl":
+        zipfile.file(`block/${file.name}.sbl`, blob);
+        break;
+      case "sbb":
+        zipfile.file(`building/${file.name}.sbb`, blob);
+        break;
+    }
+  });
+
+  zipfile.generateAsync({ type: "blob" }).then((content) => {
+    const downloadElement = document.createElement("a");
+    downloadElement.href = URL.createObjectURL(content);
+    downloadElement.download = "csx.zip";
+    downloadElement.click();
+
+    URL.revokeObjectURL(downloadElement.href);
+    downloadElement.remove();
+  });
+});
 
 downloadCSX.addEventListener("click", () => {
   BuildCSX();
