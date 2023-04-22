@@ -49,7 +49,7 @@ export default function ParseCSX(buffer: ArrayBuffer) {
     const magic = dataView.getUint8(offset);
     const fileOffset = dataView.getUint32(offset + 4, true);
     const fileSize = dataView.getUint32(offset + 8, true);
-    const fileName = getString(dataView, offset + 12, 52);
+    const fileName = getString(dataView, offset + 12, 52);  
 
     fileTable.push({
       name: fileName,
@@ -97,6 +97,7 @@ export default function ParseCSX(buffer: ArrayBuffer) {
           name: file.name,
           extension: "png",
           size: file.size,
+          reflectiveness: dataView.getUint32(file.offset + 0x48, true),
           data: fileData,
         });
         break;

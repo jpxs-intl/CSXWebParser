@@ -2,6 +2,7 @@ export interface File {
   name: string;
   extension: "sbl" | "sbb" | "png" | "csx";
   size: number;
+  reflectiveness?: number;
   data: ArrayBuffer;
 }
 
@@ -71,6 +72,7 @@ export default class FileListManager {
                 </div>
                 <div class="file-right">
                     <div class="file-size">${FileListManager.formatFileSize(file.size)}</div>
+                    ${file.extension == "png" ? `<div class="file-reflectiveness">${file.reflectiveness}</div>` : ""}
                     <div class="file-extension">${
                       FileListManager.fileTypes[file.extension as "csx" | "sbl" | "sbb" | "png"]
                     }</div>
