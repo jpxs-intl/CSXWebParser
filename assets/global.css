@@ -5,29 +5,39 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #fff;
-  background-color: #111;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #fff;
+    background-color: #111;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
 }
 
 .button {
-   background-color: #111;
+    background-color: #111;
     border: 1px solid var(--accent-color);
     color: var(--accent-color);
-    padding: 10px 20px;
+    padding: 0.5rem;
     border-radius: 5px;
-    transition: 0.3s;
+    transition: 0.1s ease-in-out;
     font-family: 'Poppins', sans-serif;
     font-size: 16px;
     cursor: pointer;
+}
+
+i.fa {
+    display: inline-flex;
+    vertical-align: middle;
+    font-size: 1.5rem;
+}
+
+button>i.fa {
+    padding: 0 0.2rem;
 }
 
 .button:hover {
@@ -43,11 +53,15 @@ body {
     outline: none;
 }
 
+label {
+    margin-right: 0.5rem;
+}
+
 select {
     background-color: #111;
     border: 1px solid var(--accent-color);
     color: var(--accent-color);
-    padding: 10px 20px;
+    padding: 0.5rem;
     border-radius: 5px;
     transition: 0.3s;
     font-family: 'Poppins', sans-serif;
@@ -55,45 +69,89 @@ select {
     cursor: pointer;
 }
 
-.file-list {
-    width: 100%;
-    border: 2px #ff6600;
+select>option:hover {
+    font-weight: 1000;
 }
 
-.file-list > tr {
+.file-list {
+    width: 100%;
+    border: 2px var(--accent-color);
+    border-collapse: collapse;
+
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+}
+
+.file-list td:last-child {
+    width: fit-content;
+}
+
+.file-list>tr {
     padding: 10px 20px;
     border-radius: 5px;
     font-family: 'Poppins', sans-serif;
     font-size: 16px;
 }
 
-.file-list > tr:hover {
-    background-color: #222;
+.file-list td, .file-list th {
+    border: 1px solid #444;
+    padding: 8px;
+    position: relative;
 }
 
-.file {
-    margin: 20px 0;
-    position: static
+.file-list tr:nth-child(even){background-color: #222222;}
+
+.file-list tr:hover {background-color: #444;}
+
+.file-list th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: var(--accent-color);
+  color: white;
 }
 
-.file-left {
+.file-actions {
+    display: none;
     position: absolute;
-    left: 1rem;
-    display: flex;
-    align-items: start;
-    justify-content: center;
-    flex-direction: row;
+    top: 0;
+    right: 0;
+    padding: 0 8px;
+    white-space: nowrap;
 }
 
-.file-right {
-    position: static;
-    right: 1rem;
-    display: flex;
-    align-items: end;
-    justify-content: right;
-    flex-direction: row;
+td:hover .file-actions {
+    display: block;
 }
 
-.file-right > * {
-    margin-left: 1rem;
+.file-action-button {
+    padding: 0.2rem;
+    top: 0.2rem;
+    position: relative;
+}
+
+.block {
+    padding-top: 1rem;
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sorting {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.sort {
+    padding: 0.5rem;
+    margin-right: 1rem;
+}
+
+.actions {
+    align-self: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
 }
