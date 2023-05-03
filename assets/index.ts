@@ -12,7 +12,7 @@ const fileListElement = document.getElementById("list") as HTMLUListElement;
 
 export const fileListManager = new FileListManager(fileListElement);
 
-const sortBySelector = document.getElementById("sort") as HTMLSelectElement;
+const sortBySelector = document.getElementById("sort-by") as HTMLSelectElement;
 const sortDirectionSelector = document.getElementById("order") as HTMLSelectElement;
 
 sortBySelector.addEventListener("change", () => {

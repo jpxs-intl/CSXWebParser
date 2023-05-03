@@ -39,6 +39,15 @@ export default class FileListManager {
   public updateFileList() {
     this.fileListElement.innerHTML = "";
 
+    const headerElement = document.createElement("tr");
+    headerElement.innerHTML = `
+      <th>Name</th>
+      <th>Size</th>
+      <th>Reflectiveness</th>
+      <th>Extension</th>
+    `;
+    this.fileListElement.appendChild(headerElement);
+
     this.files
     //   .sort((a, b) => {
     //     if (this.sortBy == "name") {
@@ -65,20 +74,18 @@ export default class FileListManager {
     //   })
       .forEach((file, index) => {
         const fileElement = document.createElement("tr");
-        fileElement.classList.add("file");
         fileElement.innerHTML = `
-                <div class="file-left">
-                    <div class="file-name">${file.name}</div>
-                </div>
-                <div class="file-right">
-                    <div class="file-size">${FileListManager.formatFileSize(file.size)}</div>
-                    ${file.extension == "png" ? `<div class="file-reflectiveness">${file.reflectiveness}</div>` : ""}
-                    <div class="file-extension">${
-                      FileListManager.fileTypes[file.extension as "csx" | "sbl" | "sbb" | "png"]
-                    }</div>
-                    <button class="button remove" id="remove-${index}">Remove</button>
-                    <button class="button download" id="download-${index}">Download</button>
-                </div>
+                <td>${file.name}</td>
+                <td>${FileListManager.formatFileSize(file.size)}</td>
+                <td>${file.extension == "png" ? `${file.reflectiveness}` : ""}</td>
+                <td>${
+                  FileListManager.fileTypes[file.extension as "csx" | "sbl" | "sbb" | "png"]
+                }
+                <span class="file-actions">
+                  <button class="button file-action-button remove" id="remove-${index}"><i class="fa fa-times"></i></button>
+                  <button class="button file-action-button download" id="download-${index}"><i class="fa fa-download"></i></button>
+                </span>
+                </td>
             `;
 
         fileElement.querySelector(`#remove-${index}`)?.addEventListener("click", () => {
