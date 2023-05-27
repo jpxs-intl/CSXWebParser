@@ -26,7 +26,7 @@ sortDirectionSelector.addEventListener("change", () => {
 });
 
 uploadButton.addEventListener("click", async () => {
-  openFileInputDialog().then((files) => {
+  openFileInputDialog().then(async (files) => {
     if (!files) return;
     const fileArray = Array.from(files);
 
@@ -38,28 +38,35 @@ uploadButton.addEventListener("click", async () => {
       csxReader.readAsArrayBuffer(csxFile);
       csxReader.onload = () => {
         const csx = csxReader.result as ArrayBuffer;
-        const csxFiles = ParseCSX(csx);
+        ParseCSX(csx);
       };
     } else {
       // sbl/sbb/png file upload
 
       console.log(fileArray);
 
-      fileArray.forEach((file) => {
-        const fileReader = new FileReader();
-        fileReader.readAsArrayBuffer(file);
-        fileReader.onload = () => {
-          const fileBuffer = fileReader.result as ArrayBuffer;
-          fileListManager.add({
-            name: file.name,
-            size: file.size,
-            extension: file.name.split(".").pop() as any,
-            data: fileBuffer,
-          });
+      await Promise.all(
+        fileArray.map((file) => {
+          return new Promise<void>((resolve) => {
+            const fileReader = new FileReader();
+            fileReader.readAsArrayBuffer(file);
+            fileReader.onload = () => {
+              const fileBuffer = fileReader.result as ArrayBuffer;
+              fileListManager.add({
+                name: file.name,
+                size: file.size,
+                extension: file.name.split(".").pop() as any,
+                data: fileBuffer,
+              });
 
-          fileListManager.updateFileList();
-        };
-      });
+              resolve();
+            };
+            
+          });
+        })
+      );
+
+      fileListManager.updateFileList();
     }
   });
 });

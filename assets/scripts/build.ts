@@ -27,6 +27,19 @@ export default function BuildCSX() {
     return file.extension === "sbl" || file.extension === "sbb" || file.extension === "png";
   }) as WriteFile[];
 
+  const storageOrder = {
+    sbb: 1,
+    sbl: 2,
+    png: 3
+  }
+  fileStorage.sort((a, b) => {
+    if (storageOrder[a.extension] > storageOrder[b.extension])
+      return 1;
+    if (storageOrder[a.extension] < storageOrder[b.extension])
+      return -1;
+    return 0;
+  })
+
   const fileMagics = {
     sbb: 0x02005a58,
     sbl: 0x01005a58,
@@ -91,9 +104,14 @@ export default function BuildCSX() {
       view.setInt32(dataOffset + 0x48, file.reflectiveness ?? 0, true);
     }
 
+    const fileView = new DataView(file.data)
+    if (file.extension == "sbb" || file.extension == "sbl") {
+      fileView.setUint8(0, 0x01)
+    }
+
     const fileOffset = dataOffset + offsets[file.extension];
-    write(view, file.data, fileOffset);
-    dataOffset += file.data.byteLength + offsets[file.extension];
+    write(view, fileView, fileOffset);
+    dataOffset += fileView.byteLength + offsets[file.extension];
   }
 
   // write the table
@@ -104,7 +122,7 @@ export default function BuildCSX() {
     view.setUint32(tableOffset + i * 0x40, file.fileMagic);
     view.setUint32(tableOffset + i * 0x40 + 4, file.fileOffset, true);
     view.setUint32(tableOffset + i * 0x40 + 8, file.fileSize, true);
-    writeString(view, file.fileName, tableOffset + i * 0x40 + 12);
+    writeString(view, file.fileName.replace(/\.[^/.]+$/, ""), tableOffset + i * 0x40 + 12);
   }
 
   // download the file
