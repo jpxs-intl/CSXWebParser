@@ -99,9 +99,9 @@ export default function BuildCSX() {
     const file = fileStorage[i];
 
     if (file.extension == "png") {
-      view.setInt8(dataOffset, 0x01);
-      view.setInt32(dataOffset + 0x44, file.data.byteLength, true);
-      view.setInt32(dataOffset + 0x48, file.reflectiveness ?? 0, true);
+      view.setUint8(dataOffset, 0x01);
+      view.setUint32(dataOffset + 0x44, file.data.byteLength, true);
+      view.setUint32(dataOffset + 0x48, file.reflectiveness ?? 0, true);
     }
 
     const fileView = new DataView(file.data)
