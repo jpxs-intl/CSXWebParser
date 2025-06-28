@@ -107,10 +107,6 @@ export default function ParseCSX(buffer: ArrayBuffer) {
           );
 
           if (materialName == "") materialName = file.name;
-
-          console.log(
-            `fetching material ${materialName} ${materialData.byteLength} ${materialSize}`
-          );
         }
 
         const textureData = buffer.slice(

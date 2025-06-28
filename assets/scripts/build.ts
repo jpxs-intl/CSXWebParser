@@ -61,7 +61,13 @@ export default function BuildCSX() {
   for (let i = 0; i < fileStorage.length; i++) {
     const file = fileStorage[i];
 
-    const size = file.data.byteLength;
+    let size = file.data.byteLength;
+    if (file.extension == "png") {
+      size += 0x4c;
+      if (file.materialData) {
+        size += file.materialData.byteLength;
+      }
+    }
 
     tableData.push({
       fileMagic: fileMagics[file.extension],
@@ -79,8 +85,12 @@ export default function BuildCSX() {
     const file = fileStorage[i];
     fileSize += file.data.byteLength;
 
-    if (file.extension == "png" && file.materialData)
-      fileSize += file.materialData.byteLength;
+    if (file.extension == "png") {
+      fileSize += 0x4c;
+      if (file.materialData) {
+        fileSize += file.materialData.byteLength;
+      }
+    }
   }
 
   // make a buffer for the file
@@ -122,7 +132,7 @@ export default function BuildCSX() {
       if (file.materialData) {
         const materialView = new DataView(file.materialData);
 
-        write(view, materialView, dataOffset + fileLen);
+        write(view, materialView, dataOffset);
         dataOffset += materialView.byteLength;
       }
     } else {
@@ -133,15 +143,16 @@ export default function BuildCSX() {
 
   // write the table
   for (let i = 0; i < tableData.length; i++) {
+    const offset = i * 0x40;
     const file = tableData[i];
 
-    view.setUint32(tableOffset + i * 0x40, file.fileMagic);
-    view.setUint32(tableOffset + i * 0x40 + 4, file.fileOffset, true);
-    view.setUint32(tableOffset + i * 0x40 + 8, file.fileSize, true);
+    view.setUint32(tableOffset + offset, file.fileMagic);
+    view.setUint32(tableOffset + offset + 4, file.fileOffset, true);
+    view.setUint32(tableOffset + offset + 8, file.fileSize, true);
     writeString(
       view,
       file.fileName.replace(/\.[^/.]+$/, ""),
-      tableOffset + i * 0x40 + 12,
+      tableOffset + offset + 12,
       0x34
     );
   }
