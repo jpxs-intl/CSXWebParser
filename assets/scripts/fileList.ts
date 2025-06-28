@@ -1,13 +1,28 @@
-export interface File {
+import openFileInputDialog from "./fileInputDialog";
+
+interface FileData {
   name: string;
-  extension: "sbl" | "sbb" | "png" | "csx";
   size: number;
-  reflectiveness?: number;
   data: ArrayBuffer;
 }
 
+export type Texture = {
+  extension: "png";
+  textureSize: number,
+  materialSize: number,
+
+  materialName?: string;
+  materialData?: ArrayBuffer;
+} & FileData;
+
+export type File = {
+  extension: "sbl" | "sbb" | "csx";
+} & FileData;
+
+export type AnyFile = Texture | File;
+
 export default class FileListManager {
-  public files: File[] = [];
+  public files: AnyFile[] = [];
   public fileListElement: HTMLUListElement;
 
   public static fileTypes = {
@@ -24,16 +39,26 @@ export default class FileListManager {
     this.fileListElement = fileListElement;
   }
 
-  public add(file: File) {
+  public add(file: AnyFile) {
     this.files.push(file);
   }
 
-  public remove(file: File) {
+  public remove(file: AnyFile) {
     this.files.splice(this.files.indexOf(file), 1);
   }
 
   public clear() {
     this.files = [];
+  }
+
+  public static downloadFile(name: string, blob: Blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
   }
 
   public updateFileList() {
@@ -43,7 +68,7 @@ export default class FileListManager {
     headerElement.innerHTML = `
       <th>Name</th>
       <th>Size</th>
-      <th>Reflectiveness</th>
+      <th>Material</th>
       <th>Extension</th>
     `;
     this.fileListElement.appendChild(headerElement);
@@ -77,13 +102,23 @@ export default class FileListManager {
         fileElement.innerHTML = `
                 <td>${file.name}</td>
                 <td>${FileListManager.formatFileSize(file.size)}</td>
-                <td>${file.extension == "png" ? `${file.reflectiveness}` : ""}</td>
+                <td>${file.extension == "png" ? `${file.materialName ?? ""}` : ""}</td>
                 <td>${
                   FileListManager.fileTypes[file.extension as "csx" | "sbl" | "sbb" | "png"]
                 }
                 <span class="file-actions">
-                  <button class="button file-action-button remove" id="remove-${index}"><i class="fa fa-times"></i></button>
-                  <button class="button file-action-button download" id="download-${index}"><i class="fa fa-download"></i></button>
+                  <button class="button file-action-button remove" id="remove-${index}" title="Remove"><i class="fa fa-times"></i></button>
+                  <button class="button file-action-button download" id="download-${index}" title="Download"><i class="fa fa-download"></i></button>
+                  
+                  ${file.extension == "png" ? 
+                    `<button class="button file-action-button set-mat" id="set-mat-${index}" title="Set Material"><i class="fa fa-wrench"></i></button>` 
+                    : ""
+                  }
+                  ${
+                    (file.extension == "png" && file.materialData) 
+                    ? `<button class="button file-action-button download-mat" id="download-mat-${index}" title="Download Material"><i class="fa fa-download"></i></button>`
+                    : ""
+                  }
                 </span>
                 </td>
             `;
@@ -93,15 +128,45 @@ export default class FileListManager {
           this.updateFileList();
         });
 
+        fileElement.querySelector(`#set-mat-${index}`)?.addEventListener("click", () => {
+          if (file.extension != "png")
+              return
+
+          openFileInputDialog(".png", false).then(async (files) => {
+            if (!files)
+              return
+
+            let [diskFile] = files;
+            const fileReader = new FileReader();
+            fileReader.readAsArrayBuffer(diskFile);
+            fileReader.onload = () => {
+              const fileBuffer = fileReader.result as ArrayBuffer;
+              const nameBuff = diskFile.name.split(".");
+              const extension = nameBuff.pop();
+
+              if (extension != "png") {
+                return;
+              }
+
+              file.materialName = nameBuff.join();
+              file.materialData = fileBuffer;
+              this.updateFileList();
+            };
+          })
+        });
+
         fileElement.querySelector(`#download-${index}`)?.addEventListener("click", () => {
           const blob = new Blob([file.data], { type: "application/octet-stream" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = file.name;
-          a.click();
-          URL.revokeObjectURL(url);
-          a.remove();
+          FileListManager.downloadFile(file.name + "." + file.extension, blob);
+        });
+
+        fileElement.querySelector(`#download-mat-${index}`)?.addEventListener("click", () => {
+          if (file.extension != "png" || !file.materialData)
+            return
+
+          const blob = new Blob([file.materialData], { type: "application/octet-stream" });
+          const name = file.materialName ?? file.name
+          FileListManager.downloadFile(name + ".png", blob);
         });
 
         this.fileListElement.appendChild(fileElement);

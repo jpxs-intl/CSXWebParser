@@ -52,10 +52,18 @@ uploadButton.addEventListener("click", async () => {
             fileReader.readAsArrayBuffer(file);
             fileReader.onload = () => {
               const fileBuffer = fileReader.result as ArrayBuffer;
+              const nameBuff = file.name.split(".");
+              const extension = nameBuff.pop();
+
+              if (extension != "sbl" && extension != "sbb" && extension != "png") {
+                resolve();
+                return;
+              }
+
               fileListManager.add({
-                name: file.name,
+                name: nameBuff.join(),
                 size: file.size,
-                extension: file.name.split(".").pop() as any,
+                extension: extension as any,
                 data: fileBuffer,
               });
 
@@ -75,6 +83,7 @@ downloadAll.addEventListener("click", () => {
   const zipfile = new zip();
 
   zipfile.folder("texture");
+  zipfile.folder("texturematerial");
   zipfile.folder("block");
   zipfile.folder("building");
 
@@ -84,6 +93,14 @@ downloadAll.addEventListener("click", () => {
     switch (file.extension) {
       case "png":
         zipfile.file(`texture/${file.name}.png`, blob);
+
+        if (file.materialData) {
+          const materialBlob = new Blob([file.materialData], { type: "application/octet-stream" });
+          const name = file.materialName;
+
+          zipfile.file(`texturematerial/${name ?? file.name}.png`, materialBlob);
+        }
+
         break;
       case "sbl":
         zipfile.file(`block/${file.name}.sbl`, blob);

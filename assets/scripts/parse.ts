@@ -1,3 +1,4 @@
+import { text } from "express";
 import { fileListManager } from "..";
 
 export default function ParseCSX(buffer: ArrayBuffer) {
@@ -16,7 +17,7 @@ export default function ParseCSX(buffer: ArrayBuffer) {
   // help from noche and checkraisefold with this
 
   /*
-        4 bytes - Magic, value 0x017EF1C5
+        4 bytes - Magic, value 0xC5F17E01
         4 bytes - Offset from beginning of file where lookup table starts
         4 bytes - Amount of 0x40 byte segments in lookup table/assets stored by CSX file
         
@@ -73,8 +74,8 @@ export default function ParseCSX(buffer: ArrayBuffer) {
       case 0x01: {
         const fileData = buffer.slice(file.offset, file.offset + file.size);
         fileListManager.add({
-          name: file.name,
           extension: "sbl",
+          name: file.name,
           size: file.size,
           data: fileData,
         });
@@ -83,8 +84,8 @@ export default function ParseCSX(buffer: ArrayBuffer) {
       case 0x02: {
         const fileData = buffer.slice(file.offset, file.offset + file.size);
         fileListManager.add({
-          name: file.name,
           extension: "sbb",
+          name: file.name,
           size: file.size,
           data: fileData,
         });
@@ -92,13 +93,32 @@ export default function ParseCSX(buffer: ArrayBuffer) {
         break;
       }
       case 0x04: {
-        const fileData = buffer.slice(file.offset + 0x4c, file.offset + file.size);
+        const afterHeader = file.offset + 0x4c;
+        const textureSize = dataView.getUint32(file.offset + 0x44, true);
+        const materialSize = dataView.getUint32(file.offset + 0x48, true);
+
+        let materialData = undefined, materialName = undefined;
+        if (materialSize > 0) {
+          materialName = getString(dataView, file.offset + 4, 0x40);
+          materialData = buffer.slice(afterHeader + textureSize, afterHeader + textureSize + materialSize);
+
+          if (materialName == "")
+            materialName = file.name;
+
+          console.log(`fetching material ${materialName} ${materialData.byteLength} ${materialSize}`);
+        }
+
+        const textureData = buffer.slice(afterHeader, afterHeader + textureSize);
         fileListManager.add({
-          name: file.name,
           extension: "png",
+          name: file.name,
           size: file.size,
-          reflectiveness: dataView.getUint32(file.offset + 0x48, true),
-          data: fileData,
+          data: textureData,
+
+          textureSize,
+          materialName,
+          materialSize,
+          materialData,
         });
         break;
       }

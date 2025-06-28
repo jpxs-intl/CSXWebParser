@@ -1,7 +1,7 @@
 import { fileListManager } from "..";
-import { File } from "./fileList";
+import { AnyFile } from "./fileList";
 
-type WriteFile = File & {
+type WriteFile = AnyFile & {
   extension: "sbl" | "sbb" | "png";
 };
 
@@ -9,7 +9,7 @@ export default function BuildCSX() {
   // help from noche and checkraisefold with this
 
   /*
-        4 bytes - Magic, value 0x017EF1C5
+        4 bytes - Magic, value 0xC5F17E01
         4 bytes - Offset from beginning of file where lookup table starts
         4 bytes - Amount of 0x40 byte segments in lookup table/assets stored by CSX file
         
@@ -18,7 +18,7 @@ export default function BuildCSX() {
 
         Lookup table segments:
         each starting with 0x02005A58 magic (02 can be 01 or 04 instead, file type?)
-        4 bytes - Offset from start of file where beginning of 0x4C file header starts. This file header seems to be mostly useless information?
+        4 bytes - Offset from start of file where file data begins. Textures specifically are prepended with a custom header for materials.
         4 bytes - File size. This ends at the actual last byte from the file if you offset from the start of the file header.
         52 bytes - File name. This is padded with 0x00 bytes at the end.
       */
@@ -46,12 +46,6 @@ export default function BuildCSX() {
     png: 0x04005a58,
   };
 
-  const offsets = {
-    sbl: 0x0,
-    sbb: 0x0,
-    png: 0x4c,
-  };
-
   const tableData: {
     fileMagic: number;
     fileOffset: number;
@@ -65,7 +59,7 @@ export default function BuildCSX() {
   for (let i = 0; i < fileStorage.length; i++) {
     const file = fileStorage[i];
 
-    const size = file.extension == "png" ? file.data.byteLength + 0x4c : file.data.byteLength;
+    const size = file.data.byteLength;
 
     tableData.push({
       fileMagic: fileMagics[file.extension],
@@ -81,7 +75,10 @@ export default function BuildCSX() {
   let fileSize = 12 + fileStorage.length * 0x40;
   for (let i = 0; i < fileStorage.length; i++) {
     const file = fileStorage[i];
-    fileSize += file.data.byteLength + offsets[file.extension];
+    fileSize += file.data.byteLength;
+
+    if (file.extension == "png" && file.materialData)
+      fileSize += file.materialData.byteLength
   }
 
   // make a buffer for the file
@@ -89,40 +86,57 @@ export default function BuildCSX() {
   const view = new DataView(buffer);
 
   // write the header
-  view.setUint32(0, 0x017ef1c5); // magic
-  view.setUint32(4, view.byteLength - tableData.length * 0x40, true); // table offset
+  const tableOffset = view.byteLength - tableData.length * 0x40;
+  view.setUint32(0, 0xc5f17e01, true); // magic
+  view.setUint32(4, tableOffset, true); // table offset
   view.setUint32(8, fileStorage.length, true); // table length
 
   // write the data
   let dataOffset = 12;
   for (let i = 0; i < fileStorage.length; i++) {
     const file = fileStorage[i];
+    const fileView = new DataView(file.data);
+    const fileLen = fileView.byteLength;
 
-    if (file.extension == "png") {
-      view.setUint8(dataOffset, 0x01);
-      view.setUint32(dataOffset + 0x44, file.data.byteLength, true);
-      view.setUint32(dataOffset + 0x48, file.reflectiveness ?? 0, true);
-    }
-
-    const fileView = new DataView(file.data)
     if (file.extension == "sbb" || file.extension == "sbl") {
       fileView.setUint8(0, 0x01)
     }
 
-    const fileOffset = dataOffset + offsets[file.extension];
-    write(view, fileView, fileOffset);
-    dataOffset += fileView.byteLength + offsets[file.extension];
+    if (file.extension == "png") {
+      let materialLen = file.materialData ? file.materialData.byteLength : 0;
+      view.setUint32(dataOffset, 0x01, true);
+
+      if (file.materialName) {
+        writeString(view, file.materialName, dataOffset + 0x4, 0x40)
+      }
+
+      view.setUint32(dataOffset + 0x44, fileLen, true);
+      view.setUint32(dataOffset + 0x48, materialLen, true);
+
+      dataOffset += 0x4c;
+      write(view, fileView, dataOffset);
+      dataOffset += fileLen;
+
+      if (file.materialData) {
+        const materialView = new DataView(file.materialData);
+
+        write(view, materialView, dataOffset + fileLen);
+        dataOffset += materialView.byteLength;
+      }
+    } else {
+      write(view, fileView, dataOffset);
+      dataOffset += fileLen;
+    }
   }
 
   // write the table
-  const tableOffset = view.byteLength - tableData.length * 0x40;
   for (let i = 0; i < tableData.length; i++) {
     const file = tableData[i];
 
     view.setUint32(tableOffset + i * 0x40, file.fileMagic);
     view.setUint32(tableOffset + i * 0x40 + 4, file.fileOffset, true);
     view.setUint32(tableOffset + i * 0x40 + 8, file.fileSize, true);
-    writeString(view, file.fileName.replace(/\.[^/.]+$/, ""), tableOffset + i * 0x40 + 12);
+    writeString(view, file.fileName.replace(/\.[^/.]+$/, ""), tableOffset + i * 0x40 + 12, 0x34);
   }
 
   // download the file
@@ -136,8 +150,8 @@ export default function BuildCSX() {
   a.remove();
 }
 
-function writeString(dataView: DataView, str: string, offset: number) {
-  for (let i = 0; i < str.length; i++) {
+function writeString(dataView: DataView, str: string, offset: number, maxLen?: number) {
+  for (let i = 0; i < (maxLen ?? str.length); i++) {
     dataView.setUint8(offset + i, str.charCodeAt(i));
   }
 }
