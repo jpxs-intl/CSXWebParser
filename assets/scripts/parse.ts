@@ -50,7 +50,7 @@ export default function ParseCSX(buffer: ArrayBuffer) {
     const magic = dataView.getUint8(offset);
     const fileOffset = dataView.getUint32(offset + 4, true);
     const fileSize = dataView.getUint32(offset + 8, true);
-    const fileName = getString(dataView, offset + 12, 52);  
+    const fileName = getString(dataView, offset + 12, 52);
 
     fileTable.push({
       name: fileName,
@@ -97,18 +97,26 @@ export default function ParseCSX(buffer: ArrayBuffer) {
         const textureSize = dataView.getUint32(file.offset + 0x44, true);
         const materialSize = dataView.getUint32(file.offset + 0x48, true);
 
-        let materialData = undefined, materialName = undefined;
+        let materialData = undefined,
+          materialName = undefined;
         if (materialSize > 0) {
           materialName = getString(dataView, file.offset + 4, 0x40);
-          materialData = buffer.slice(afterHeader + textureSize, afterHeader + textureSize + materialSize);
+          materialData = buffer.slice(
+            afterHeader + textureSize,
+            afterHeader + textureSize + materialSize
+          );
 
-          if (materialName == "")
-            materialName = file.name;
+          if (materialName == "") materialName = file.name;
 
-          console.log(`fetching material ${materialName} ${materialData.byteLength} ${materialSize}`);
+          console.log(
+            `fetching material ${materialName} ${materialData.byteLength} ${materialSize}`
+          );
         }
 
-        const textureData = buffer.slice(afterHeader, afterHeader + textureSize);
+        const textureData = buffer.slice(
+          afterHeader,
+          afterHeader + textureSize
+        );
         fileListManager.add({
           extension: "png",
           name: file.name,

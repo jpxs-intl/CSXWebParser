@@ -5,15 +5,21 @@ import ParseCSX from "./scripts/parse";
 import zip from "jszip";
 
 const uploadButton = document.getElementById("upload") as HTMLButtonElement;
-const downloadAll = document.getElementById("download-all") as HTMLButtonElement;
-const downloadCSX = document.getElementById("download-csx") as HTMLButtonElement;
+const downloadAll = document.getElementById(
+  "download-all"
+) as HTMLButtonElement;
+const downloadCSX = document.getElementById(
+  "download-csx"
+) as HTMLButtonElement;
 
 const fileListElement = document.getElementById("list") as HTMLUListElement;
 
 export const fileListManager = new FileListManager(fileListElement);
 
 const sortBySelector = document.getElementById("sort-by") as HTMLSelectElement;
-const sortDirectionSelector = document.getElementById("order") as HTMLSelectElement;
+const sortDirectionSelector = document.getElementById(
+  "order"
+) as HTMLSelectElement;
 
 sortBySelector.addEventListener("change", () => {
   fileListManager.sortBy = sortBySelector.value as any;
@@ -55,7 +61,11 @@ uploadButton.addEventListener("click", async () => {
               const nameBuff = file.name.split(".");
               const extension = nameBuff.pop();
 
-              if (extension != "sbl" && extension != "sbb" && extension != "png") {
+              if (
+                extension != "sbl" &&
+                extension != "sbb" &&
+                extension != "png"
+              ) {
                 resolve();
                 return;
               }
@@ -69,7 +79,6 @@ uploadButton.addEventListener("click", async () => {
 
               resolve();
             };
-            
           });
         })
       );
@@ -95,10 +104,15 @@ downloadAll.addEventListener("click", () => {
         zipfile.file(`texture/${file.name}.png`, blob);
 
         if (file.materialData) {
-          const materialBlob = new Blob([file.materialData], { type: "application/octet-stream" });
+          const materialBlob = new Blob([file.materialData], {
+            type: "application/octet-stream",
+          });
           const name = file.materialName;
 
-          zipfile.file(`texturematerial/${name ?? file.name}.png`, materialBlob);
+          zipfile.file(
+            `texturematerial/${name ?? file.name}.png`,
+            materialBlob
+          );
         }
 
         break;

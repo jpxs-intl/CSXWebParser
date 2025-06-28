@@ -24,21 +24,23 @@ export default function BuildCSX() {
       */
 
   let fileStorage: WriteFile[] = fileListManager.files.filter((file) => {
-    return file.extension === "sbl" || file.extension === "sbb" || file.extension === "png";
+    return (
+      file.extension === "sbl" ||
+      file.extension === "sbb" ||
+      file.extension === "png"
+    );
   }) as WriteFile[];
 
   const storageOrder = {
     sbb: 1,
     sbl: 2,
-    png: 3
-  }
+    png: 3,
+  };
   fileStorage.sort((a, b) => {
-    if (storageOrder[a.extension] > storageOrder[b.extension])
-      return 1;
-    if (storageOrder[a.extension] < storageOrder[b.extension])
-      return -1;
+    if (storageOrder[a.extension] > storageOrder[b.extension]) return 1;
+    if (storageOrder[a.extension] < storageOrder[b.extension]) return -1;
     return 0;
-  })
+  });
 
   const fileMagics = {
     sbb: 0x02005a58,
@@ -68,7 +70,7 @@ export default function BuildCSX() {
       fileName: file.name,
     });
 
-    currentOffset += size
+    currentOffset += size;
   }
 
   // calculate file size
@@ -78,7 +80,7 @@ export default function BuildCSX() {
     fileSize += file.data.byteLength;
 
     if (file.extension == "png" && file.materialData)
-      fileSize += file.materialData.byteLength
+      fileSize += file.materialData.byteLength;
   }
 
   // make a buffer for the file
@@ -99,15 +101,15 @@ export default function BuildCSX() {
     const fileLen = fileView.byteLength;
 
     if (file.extension == "sbb" || file.extension == "sbl") {
-      fileView.setUint8(0, 0x01)
+      fileView.setUint8(0, 0x01);
     }
 
     if (file.extension == "png") {
       let materialLen = file.materialData ? file.materialData.byteLength : 0;
       view.setUint32(dataOffset, 0x01, true);
 
-      if (file.materialName) {
-        writeString(view, file.materialName, dataOffset + 0x4, 0x40)
+      if (file.materialName && file.materialName != file.name) {
+        writeString(view, file.materialName, dataOffset + 0x4, 0x40);
       }
 
       view.setUint32(dataOffset + 0x44, fileLen, true);
@@ -136,7 +138,12 @@ export default function BuildCSX() {
     view.setUint32(tableOffset + i * 0x40, file.fileMagic);
     view.setUint32(tableOffset + i * 0x40 + 4, file.fileOffset, true);
     view.setUint32(tableOffset + i * 0x40 + 8, file.fileSize, true);
-    writeString(view, file.fileName.replace(/\.[^/.]+$/, ""), tableOffset + i * 0x40 + 12, 0x34);
+    writeString(
+      view,
+      file.fileName.replace(/\.[^/.]+$/, ""),
+      tableOffset + i * 0x40 + 12,
+      0x34
+    );
   }
 
   // download the file
@@ -150,13 +157,22 @@ export default function BuildCSX() {
   a.remove();
 }
 
-function writeString(dataView: DataView, str: string, offset: number, maxLen?: number) {
+function writeString(
+  dataView: DataView,
+  str: string,
+  offset: number,
+  maxLen?: number
+) {
   for (let i = 0; i < (maxLen ?? str.length); i++) {
     dataView.setUint8(offset + i, str.charCodeAt(i));
   }
 }
 
-function write(dataView: DataView, buffer: ArrayBuffer | DataView, offset: number) {
+function write(
+  dataView: DataView,
+  buffer: ArrayBuffer | DataView,
+  offset: number
+) {
   const view = buffer instanceof DataView ? buffer : new DataView(buffer);
   for (let i = 0; i < buffer.byteLength; i++) {
     dataView.setUint8(offset + i, view.getUint8(i));
