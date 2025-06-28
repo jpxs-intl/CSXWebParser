@@ -83,7 +83,7 @@ select>option:hover {
 }
 
 .file-list td:last-child {
-    width: fit-content;
+    width: 25%;
 }
 
 .file-list>tr {
