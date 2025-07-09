@@ -31,9 +31,24 @@ sortDirectionSelector.addEventListener("change", () => {
   fileListManager.updateFileList();
 });
 
+let hasRegisteredUnload = false;
+const beforeUnloadHandler = (event: Event) => {
+  // Recommended
+  event.preventDefault();
+
+  // Included for legacy support, e.g. Chrome/Edge < 119
+  event.returnValue = true;
+};
+
 uploadButton.addEventListener("click", async () => {
   openFileInputDialog().then(async (files) => {
     if (!files) return;
+
+    if (!hasRegisteredUnload) {
+      hasRegisteredUnload = true;
+      window.addEventListener("beforeunload", beforeUnloadHandler);
+    }
+
     const fileArray = Array.from(files);
 
     if (fileArray.find((file) => file.name.endsWith(".csx"))) {
