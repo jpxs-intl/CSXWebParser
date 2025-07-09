@@ -124,6 +124,11 @@ export default class FileListManager {
                       ? `<button class="button file-action-button download-mat" id="download-mat-${index}" title="Download Material"><i class="fa fa-download"></i></button>`
                       : ""
                   }
+                  ${
+                    file.extension == "png" && file.materialData
+                      ? `<button class="button file-action-button remove-mat" id="remove-mat-${index}" title="Remove Material"><i class="fa fa-times"></i></button>`
+                      : ""
+                  }
                 </span>
                 </td>
             `;
@@ -184,6 +189,17 @@ export default class FileListManager {
             });
             const name = file.materialName ?? file.name;
             FileListManager.downloadFile(name + ".png", blob);
+          });
+
+        fileElement
+          .querySelector(`#remove-mat-${index}`)
+          ?.addEventListener("click", () => {
+            if (file.extension != "png" || !file.materialData) return;
+
+            file.materialName = undefined;
+            file.materialData = undefined;
+            file.materialSize = 0;
+            this.updateFileList();
           });
 
         this.fileListElement.appendChild(fileElement);
